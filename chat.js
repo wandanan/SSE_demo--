@@ -3,6 +3,13 @@ let conversation_id = '';
 let history_message = [];
 const student_id = '002';
 const agent_num = 'Agent_1';
+let marked;
+
+// 确保marked库加载完成
+document.addEventListener('DOMContentLoaded', async () => {
+    marked = await import('https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js');
+    marked.setOptions({ breaks: true }); // 支持换行
+});
 
 // 监听输入框回车事件
 document.getElementById('messageInput').addEventListener('keypress', function(e) {
@@ -110,7 +117,7 @@ async function sendMessage() {
                             // 逐字显示新文本
                             for (const char of newText) {
                                 responseText += char;
-                                contentDiv.textContent = responseText;
+                                contentDiv.innerHTML = marked.parse(responseText);
                                 await sleep(30);
                             }
                             
@@ -157,7 +164,13 @@ function createMessageElement(text, type) {
     
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
-    contentDiv.textContent = text;
+    
+    // 如果是AI消息，使用innerHTML来支持markdown渲染
+    if (type === 'ai') {
+        contentDiv.innerHTML = marked.parse(text);
+    } else {
+        contentDiv.textContent = text;
+    }
     
     messageDiv.appendChild(contentDiv);
     chatBox.appendChild(messageDiv);
